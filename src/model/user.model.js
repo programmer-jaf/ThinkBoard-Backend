@@ -21,7 +21,13 @@ const userSchema = new Schema({
     type:String,
     required:true,
     trim:true,
-  }
+  },
+  todo:[
+    {
+      type:Schema.Types.ObjectId,
+      ref:'Todo'
+    }
+  ]
 },{
   timestamps:true
 });
