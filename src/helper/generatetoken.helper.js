@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
 
-const generateToken = async (userId) => {
+const generateToken = (userId) => {
+
   try {
-    const token = await jwt.sign({ userId }, config.JWT_SECRET, {
+    const token = jwt.sign({ userId }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRES_IN,
     });
     return token;

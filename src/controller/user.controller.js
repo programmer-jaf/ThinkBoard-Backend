@@ -1,5 +1,7 @@
 import { User } from "../model/user.model.js";
 import bcrypt from "bcrypt";
+import generateToken from '../helper/generatetoken.helper.js';
+import config from "../config/config.js";
 export const signUpController = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
@@ -47,10 +49,38 @@ export const signUpController = async (req, res) => {
   }
 };
 
+
 export const signInController = async (req, res) => {
   try {
-    return res.status(200).json({
+    // check if all fields are present
+    const {email,password} = req.body;
+    if (!email || !password) {
+      throw new Error("All fields are required");
+    }
+    // check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    // check if password is correct
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      throw new Error("Invalid password");
+    }
+    // generate token
+    console.log("user ",user)
+    const token = generateToken(user._id);
+    return res
+    .status(200)
+    .cookie("token", token,{
+      httpOnly: true,
+      secure: config.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 48 * 60 * 60 * 1000,
+    })
+    .json({
       message: "User Signed In Successfully",
+      Data:user
     });
   } catch (error) {
     return res.status(500).json({
