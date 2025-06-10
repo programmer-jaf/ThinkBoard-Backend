@@ -5,6 +5,8 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import config from "./config/config.js";
+import userRouter from "./routes/user.routes.js";
+import todoRouter from "./routes/todo.routes.js";
 
 // Configuration
 const app = express();
@@ -29,16 +31,19 @@ app.use(helmet());
 
 app.use(morgan("dev"));
 
-app.use(express.json({
-  limit: "50mb",
-  type: "application/json",
-  extended: true,
-}));
+app.use(
+  express.json({
+    limit: "50mb",
+    type: "application/json",
+    extended: true,
+  })
+);
 
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-
+app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/todo", todoRouter);
 // Global Error Handler
 
 // Export App
