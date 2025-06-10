@@ -7,6 +7,7 @@ import morgan from "morgan";
 import config from "./config/config.js";
 import userRouter from "./routes/user.routes.js";
 import todoRouter from "./routes/todo.routes.js";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 // Configuration
 const app = express();
@@ -45,6 +46,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/todo", todoRouter);
 // Global Error Handler
-
+app.use(errorMiddleware);
 // Export App
 export default app;
