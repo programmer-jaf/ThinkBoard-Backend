@@ -1,7 +1,39 @@
+import { User } from '../model/user.model.js';
 export const signUpController = async (req,res) => {
   try {
+    const {firstName,lastName,email,password} = req.body;
+    // check if all fields are present
+    if (!firstName || !lastName || !email || !password) {
+      throw new Error("All fields are required");
+    }
+    // check if email is valid
+    if (!email.includes("@")) {
+      throw new Error("Invalid email");
+    }
+
+    // check if password is valid
+    if (password.length < 6) {
+      throw new Error("Password must be at least 6 characters");
+    }
+
+    // check if user already exists
+    const user = await User.findOne({email});
+    if (user) {
+      throw new Error("User already exists");
+    }
+
+    // create user
+    const newUser = await User.create({
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      password
+    })
+
+    // send response
     return res.status(201).json({
-      message: "User Signed Up Successfully"
+      message: "User Signed Up Successfully",
+      user: newUser.toObject({getters: true, select: '-password'}),
     })
   } catch (error) {
     return res.status(500).json({
