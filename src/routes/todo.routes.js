@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authenticate } from '../middlewares/authenticate.middleware.js';
 import {
 
   createTodoController,
@@ -10,10 +11,10 @@ import {
 const todoRouter = Router();
 
 // routes
-todoRouter.post("/", createTodoController);
-todoRouter.get("/", getTodoController);
-todoRouter.get("/:id", getTodoByIdController);
-todoRouter.put("/:id", updateTodoController);
-todoRouter.delete("/:id", deleteTodoController);
+todoRouter.post("/", authenticate,createTodoController);
+todoRouter.get("/", authenticate,getTodoController);
+todoRouter.get("/:id", authenticate,getTodoByIdController);
+todoRouter.put("/:id", authenticate,updateTodoController);
+todoRouter.delete("/:id", authenticate,deleteTodoController);
 
 export default todoRouter;
