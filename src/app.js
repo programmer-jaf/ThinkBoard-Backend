@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
-import config from "./config/config";
+import config from "./config/config.js";
 
 // Configuration
 const app = express();
