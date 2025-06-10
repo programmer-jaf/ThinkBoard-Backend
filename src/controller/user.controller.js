@@ -92,7 +92,10 @@ export const signInController = async (req, res) => {
 
 export const signOutController = async (req, res) => {
   try {
-    return res.status(200).json({
+    return res
+    .status(200)
+    .clearCookie("token")
+    .json({
       message: "User Signed Out Successfully",
     });
   } catch (error) {
