@@ -1,5 +1,6 @@
 import { Todo } from "../model/todo.model.js";
-import { User } from "../model/user.model";
+import { User } from "../model/user.model.js";
+
 export const createTodoController = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -48,7 +49,7 @@ export const getTodoController = async (req, res) => {
 
 export const getTodoByIdController = async (req, res) => {
   try {
-    const todo = await Todo.findById(req.params);
+    const todo = await Todo.findById(req.params.id);
     return res.status(200).json({
       message: "GET Todo by ID Successfully",
       data: todo,
@@ -65,7 +66,7 @@ export const updateTodoController = async (req, res) => {
   try {
     const { title, description } = req.body;
     const todo = await Todo.findByIdAndUpdate(
-      req.params,
+      req.params.id,
       title ? { title } : description ? { description } : {},
       {
         new: true,
@@ -88,11 +89,11 @@ export const deleteTodoController = async (req, res) => {
     if (!req.params) {
       throw new Error("Todo ID is required");
     }
-    const todo = await Todo.findById(req.params);
+    const todo = await Todo.findById(req.params.id);
     if (!todo) {
       throw new Error("Todo not found");
     }
-    await Todo.findByIdAndDelete(req.params);
+    await Todo.findByIdAndDelete(req.params.id);
     return res.status(204).json({
       message: "Todo Deleted Successfully",
     });
