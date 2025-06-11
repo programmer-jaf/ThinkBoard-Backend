@@ -45,6 +45,10 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/todo", todoRouter);
+// health check route
+app.get("/", (req, res) => {
+  res.send("I am healthy 😎");
+})
 // Global Error Handler
 app.use(errorMiddleware);
 // Export App
