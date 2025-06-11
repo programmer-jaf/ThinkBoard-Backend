@@ -94,6 +94,10 @@ export const deleteTodoController = async (req, res) => {
       throw new Error("Todo not found");
     }
     await Todo.findByIdAndDelete(req.params.id);
+    // update the user's todo array
+    await User.findByIdAndUpdate(todo.user, {
+      $pull: { todo: todo._id },
+    })
     return res.status(204).json({
       message: "Todo Deleted Successfully",
     });
