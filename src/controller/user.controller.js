@@ -1,107 +1,117 @@
 import { User } from "../model/user.model.js";
 import bcrypt from "bcrypt";
-import generateToken from '../helper/generatetoken.helper.js';
+import generateToken from "../helper/generatetoken.helper.js";
 import config from "../config/config.js";
+import validator from "validator";
+
 export const signUpController = async (req, res) => {
   try {
+    console.log("Incoming request", req.body);
+
+    // ✅ Destructure fields
     const { firstName, lastName, email, password } = req.body;
-    // check if all fields are present
+
+    // ✅ Validate input
     if (!firstName || !lastName || !email || !password) {
-      throw new Error("All fields are required");
-    }
-    // check if email is valid
-    if (!email.includes("@")) {
-      throw new Error("Invalid email");
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    // check if password is valid
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
     if (password.length < 6) {
-      throw new Error("Password must be at least 6 characters");
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    // check if user already exists
-    const user = await User.findOne({ email });
-    if (user) {
-      throw new Error("User already exists");
+    // ✅ Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" });
     }
 
-    // hash password before store it in the database
+    // ✅ Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    // create user
+
+    // ✅ Create new user
     const newUser = await User.create({
-      first_name: firstName,
-      last_name: lastName,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
     });
 
-    // send response
+    // ✅ Remove password before sending response
+    const userObj = newUser.toObject();
+    delete userObj.password;
+
     return res.status(201).json({
       message: "User Signed Up Successfully",
-      user: newUser.toObject({ getters: true, select: "-password" }),
+      user: userObj,
     });
   } catch (error) {
+    console.error("Sign Up Error:", error);
     return res.status(500).json({
       message: "Internal Server Error",
-      error: error.message,
     });
   }
 };
 
-
 export const signInController = async (req, res) => {
   try {
-    // check if all fields are present
-    const {email,password} = req.body;
+    const { email, password } = req.body;
+
     if (!email || !password) {
-      throw new Error("All fields are required");
+      return res.status(400).json({ message: "All fields are required" });
     }
-    // check if user exists
+
     const user = await User.findOne({ email });
     if (!user) {
-      throw new Error("User not found");
+      return res.status(404).json({ message: "User not found" });
     }
-    // check if password is correct
+
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      throw new Error("Invalid password");
+      return res.status(401).json({ message: "Invalid credentials" });
     }
-    // generate token
-    console.log("user ",user)
+
     const token = generateToken(user._id);
+
+    // ✅ Remove password before sending user data
+    const userObj = user.toObject();
+    delete userObj.password;
+
     return res
-    .status(200)
-    .cookie("token", token,{
-      httpOnly: true,
-      secure: config.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 48 * 60 * 60 * 1000,
-    })
-    .json({
-      message: "User Signed In Successfully",
-      Data:user
-    });
+      .status(200)
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: config.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 48 * 60 * 60 * 1000,
+      })
+      .json({
+        message: "User Signed In Successfully",
+        user: userObj,
+        token: token, // Optional: also sending token if you need frontend side
+      });
   } catch (error) {
+    console.error("Sign In Error:", error);
     return res.status(500).json({
       message: "Internal Server Error",
-      error: error.message,
     });
   }
 };
 
 export const signOutController = async (req, res) => {
   try {
-    return res
-    .status(200)
-    .clearCookie("token")
-    .json({
+    return res.status(200).clearCookie("token").json({
       message: "User Signed Out Successfully",
     });
   } catch (error) {
+    console.error("Sign Out Error:", error);
     return res.status(500).json({
       message: "Internal Server Error",
-      error: error.message,
     });
   }
 };
